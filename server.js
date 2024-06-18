@@ -96,6 +96,7 @@ app.post("/api/getWorldCoverTypes", (req, res) => {
   const {landCoverColors} = require("./util/landCoverColors");
   const {landCoverNames} = require("./util/constants");
  
+  console.log("lngLatArray", [req.body.lngLatArray]);
 
   const geometry = ee.Geometry.Polygon([req.body.lngLatArray], null, false);
   const geometryArea = geometry.area(1).getInfo();
@@ -181,8 +182,8 @@ app.post("/api/getWorldCoverTypes", (req, res) => {
     totalArea += element.area;
   }
 
-  console.log("totalArea", totalArea);
-  console.log("geometryArea", geometryArea);
+  // console.log("totalArea", totalArea);
+  // console.log("geometryArea", geometryArea);
 
   res.send({
     urlFormat: clippedImageLayer.urlFormat,

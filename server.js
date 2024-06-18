@@ -96,7 +96,7 @@ app.post("/api/getWorldCoverTypes", (req, res) => {
   const {landCoverColors} = require("./util/landCoverColors");
   const {landCoverNames} = require("./util/constants");
  
-  console.log("lngLatArray", [req.body.lngLatArray]);
+  console.log("lngLatArray", req.body);
 
   const geometry = ee.Geometry.Polygon([req.body.lngLatArray], null, false);
   const geometryArea = geometry.area(1).getInfo();

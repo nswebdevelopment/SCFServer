@@ -11,6 +11,7 @@
   "description": "",
   "dependencies": {
     "@google/earthengine": "^0.1.405",
+    "cors": "^2.8.5",
     "express": "^4.19.2"
   }
 }

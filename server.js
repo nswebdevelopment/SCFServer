@@ -198,8 +198,33 @@ app.post("/api/getWorldCoverTypes", (req, res) => {
 
 
 
+app.get("/api/getSoilData", (req, res) => {
+
+  const soilCarbon = ee.Image('projects/soilgrids-isric/soc_mean');
+
+  // const soc_0_5cm = soilCarbon.select('soc_0-5cm_mean');
+  // const soc_5_15cm = soilCarbon.select('soc_5-15cm_mean');
+  // const soc_15_30cm = soilCarbon.select('soc_15-30cm_mean');
+  // const soc_30_60cm = soilCarbon.select('soc_30-60cm_mean');
+  // const soc_60_100cm = soilCarbon.select('soc_60-100cm_mean');
+  const soc_100_200cm = soilCarbon.select('soc_100-200cm_mean');
+
+  const visParams = {
+    min: 0,
+    max: 212,  // Adjusted to reflect typical SOC ranges in g/kg
+    palette: ['#FFFFBE','#FFEFA7','#FFE091','#FAD27C','#D4C569','#AFB45A', '#81924A', '#607E3E', '#467D37', 
+    '#367D3C',
+    '#327D52', '#2C7B67', '#267570', '#1E626F', '#164C68', '#143A66', '#1B2C66', '#251E65', '#321265', '#400565'
+    ]
+  };
 
 
+  const soc100_200cm = soc_100_200cm.getMap(visParams);
+
+  res.send({
+    soc_100_200cm: soc100_200cm.urlFormat,
+  });
+});
 
 
 app.listen(port, () => {

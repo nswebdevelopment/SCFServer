@@ -1,94 +1,21 @@
-const { ee, app, port } = require("./util/constants");
+const { ee, app, port, privateKey } = require("./util/constants");
+
+//initialize the Earth Engine client library before each request
+app.use((req, res, next) => {
+  ee.data.authenticateViaPrivateKey(privateKey, () => {
+    ee.initialize(null, null, () => {
+      console.log("Earth Engine client library initialized.");
+      next();
+    }, (err) => {
+      console.error('Initialization failed: ', err);
+      res.status(500).send('Earth Engine client library initialization failed.');
+    });
+  });
+});
 
 app.get("/api/hello", (req, res) => {
   res.json({ message: "Hello from server!" });
 });
-
-app.post("/api/getWorldCover", (req, res) => {
-  // Map of land cover class values to their respective names.
-
-
-  const landCoverNames = ee.Dictionary({
-    10: "Trees",
-    20: "Shrubland",
-    30: "Grassland",
-    40: "Cropland",
-    50: "Built-up",
-    60: "Bare / Sparse vegetation",
-    70: "Snow and ice",
-    80: "Permanent water bodies",
-    90: "Herbaceous wetland",
-    95: "Mangroves",
-    100: "Moss and lichen",
-  });
-
-  const geometry = ee.Geometry.Polygon([req.body.lngLatArray], null, false);
-
-  const clippedImage = ee.Image("ESA/WorldCover/v100/2020").clip(geometry);
-
-  const grassland = clippedImage.eq(30);
-  const cropland = clippedImage.eq(40);
-  const forest = clippedImage.eq(50);
-
-  const maskedImageGrassland = clippedImage.updateMask(grassland);
-  const maskedImageCropland = clippedImage.updateMask(cropland);
-  const maskedImageForest = clippedImage.updateMask(forest);
-
-  const clippedImageLayer = clippedImage.getMap({ bands: ["Map"] });
-  const clippedImageLayerGrassland = maskedImageGrassland.getMap({
-    palette: ["028361"],
-  });
-  const clippedImageLayerCropland = maskedImageCropland.getMap({
-    palette: ["444"],
-  });
-  const clippedImageLayerForest = maskedImageForest.getMap({
-    palette: ["888"],
-  });
-
-  const areaPerClass = ee.Dictionary(
-    clippedImage
-      .reduceRegion({
-        reducer: ee.Reducer.frequencyHistogram(),
-        geometry: geometry,
-        scale: 10,
-        maxPixels: 1e13,
-      })
-      .get("Map")
-  );
-
-  var totalArea = 0;
-
-  const areasArray = ee.List(areaPerClass.keys()).map(function (key) {
-    const classKey = ee.Number.parse(key);
-
-    const landCoverType = landCoverNames.get(classKey, 'Unknown'); // Provide 'Unknown' as a default
-    const area = ee.Number(areaPerClass.get(key)).multiply(100); // Convert to regular number and multiply
-
-    return ee.Dictionary({
-      land_cover_name: landCoverType,
-      area: area,
-    });
-  });
-
-  const areasArrayJS = areasArray.getInfo();
-
-  areasArrayJS.sort((a, b) => b.area - a.area);
-  for (const element of areasArrayJS) {
-    totalArea += element.area;
-  }
-
-  res.send({
-    urlFormat: clippedImageLayer.urlFormat,
-    grasslandUrlFormat: clippedImageLayerGrassland.urlFormat,
-    croplandUrlFormat: clippedImageLayerCropland.urlFormat,
-    forestUrlFormat: clippedImageLayerForest.urlFormat,
-    totalArea: totalArea,
-    areas: areasArrayJS,
-  });
-});
-
-
-
 
 app.post("/api/getWorldCoverTypes", (req, res) => {
   // Map of land cover class values to their respective names.
@@ -122,7 +49,7 @@ app.post("/api/getWorldCoverTypes", (req, res) => {
     newTypeValues.push(index);
     palette.push(landCoverColors[type]); // assuming colors is an array of color codes
     // typeNames.set(index, landCoverNames[type].getInfo());
-    typeNames.set(index, landCoverNames[type]);
+    typeNames.set(index, type);
   });
 
     // Remap the class values to the new values
@@ -195,8 +122,6 @@ app.post("/api/getWorldCoverTypes", (req, res) => {
     areas: areasArrayJS,
   });
 });
-
-
 
 app.get("/api/getSoilData", (req, res) => {
 

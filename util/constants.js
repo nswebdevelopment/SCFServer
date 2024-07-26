@@ -11,14 +11,6 @@ app.use(express.json());
 
 // Authenticate with GEE
 const privateKey = require('../privatekey.json'); // replace with path to your service account key file
-ee.data.authenticateViaPrivateKey(privateKey, () => {
-  ee.initialize(null, null, () => {
-    console.log('Earth Engine client library initialized.');
-    
-  });
-});
-
-
 
 const landCoverNames = {
   10: "Trees",
@@ -36,5 +28,5 @@ const landCoverNames = {
 
   
   module.exports = {
-     ee, app, port, landCoverNames
+     ee, app, port, landCoverNames, privateKey
   };

@@ -10,7 +10,7 @@ app.use(express.json());
 
 
 // Authenticate with GEE
-const privateKey = require('../privatekey.json'); // replace with path to your service account key file
+const privateKey = require('../privatekey.json');
 
 const landCoverNames = {
   10: "Trees",
